@@ -64,3 +64,25 @@ test('CLI errors never echo user paths, guide content or child failure details',
     }
   }finally{await rm(dir,{recursive:true,force:true});}
 });
+test('broker v2 corrections count once in review/pack while the raw imported audit remains intact',async()=>{
+  const {readBrokerAudit}=await import('../src/broker.mjs');
+  const directory=await mkdtemp(join(tmpdir(),'observer-corrections-')),file=join(directory,'export.jsonl');
+  const call=args=>{const child=spawnSync(process.execPath,[cli,...args],{encoding:'utf8'});assert.ifError(child.error);assert.equal(child.status,0,child.stderr);return JSON.parse(child.stdout);};
+  try{
+    for(const status of ['denied','uncertain','ambiguous']){
+      const database=join(directory,'private-'+status,'metadata.sqlite');
+      const dto=(sequence,outcome)=>({schemaVersion:2,source:'agent-credential-broker',eventId:String(sequence).repeat(64),
+        event:'outcome',actionIdHash:'a'.repeat(16),status:outcome,durationMs:25,executionId:'b'.repeat(64),
+        sequence,producerId:'c'.repeat(32),occurredAtUTC:'2026-10-17T00:00:00.000Z',observedAtUTC:'2026-10-17T00:00:00.001Z'});
+      const correction=dto(2,status==='ambiguous'?'uncertain':status);if(status==='ambiguous')correction.sequence=1;
+      await writeFile(file,[dto(1,'ok'),correction].map(value=>JSON.stringify(value)+'\n').join(''));
+      assert.equal(call(['import-broker-audit','--file',file,'--database',database]).imported,2);
+      const report=call(['review','--source','broker','--database',database]);
+      assert.equal(report.metrics.toolCalls,1);if(status==='ambiguous'){assert.equal(report.metrics.deniedToolCalls,0);assert.equal(report.metrics.uncertainToolCalls,0);assert.equal(report.coverage.brokerReview.ambiguousExecutionGroups,1);assert.ok(report.limitations.some(text=>text.includes('Conflicting records')));}
+      else assert.equal(report.metrics[status==='denied'?'deniedToolCalls':'uncertainToolCalls'],1);
+      assert.equal(report.coverage.brokerReview.correctedExecutionGroups,status==='ambiguous'?0:1);assert.equal(report.coverage.rawReturnedEvents,2);
+      assert.equal(call(['pack','--source','broker','--database',database]).report.metrics.toolCalls,1);
+      const raw=await readBrokerAudit({database});assert.equal(raw.events.length,2);assert.deepEqual(raw.events.map(event=>event.status),['ok',status==='ambiguous'?'uncertain':status]);
+    }
+  }finally{await rm(directory,{recursive:true,force:true});}
+});

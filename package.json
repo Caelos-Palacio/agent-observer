@@ -1,6 +1,6 @@
 {
   "name": "agent-observer-local",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "private": true,
   "description": "Compact agent metadata logs and evidence-based usage reviews",
   "type": "module",
