@@ -1,0 +1,14 @@
+{"corpusVersion":1,"cases":[
+{"id":"successful-calls","events":[{"event":"tool_end","tool":"read","status":"ok"}],"expected":[]},
+{"id":"three-technical-failures","events":[{"event":"tool_end","tool":"read","agent":"a","status":"error"},{"event":"tool_end","tool":"read","agent":"a","status":"error"},{"event":"tool_end","tool":"read","agent":"a","status":"error"}],"expected":["repeated_failures"]},
+{"id":"different-agents-not-retries","events":[{"event":"tool_end","tool":"read","agent":"a","status":"error"},{"event":"tool_end","tool":"read","agent":"b","status":"error"},{"event":"tool_end","tool":"read","agent":"c","status":"error"}],"expected":[]},
+{"id":"success-resets-streak","events":[{"event":"tool_end","tool":"read","status":"error"},{"event":"tool_end","tool":"read","status":"ok"},{"event":"tool_end","tool":"read","status":"error"},{"event":"tool_end","tool":"read","status":"error"}],"expected":[]},
+{"id":"cancel-not-technical-failure","events":[{"event":"tool_end","tool":"read","status":"error"},{"event":"tool_end","tool":"read","status":"cancelled"},{"event":"tool_end","tool":"read","status":"error"}],"expected":[]},
+{"id":"policy-denial-not-technical-failure","events":[{"event":"tool_end","status":"denied"},{"event":"tool_end","status":"denied"},{"event":"tool_end","status":"denied"}],"expected":[]},
+{"id":"uncertain-effect-needs-verification","events":[{"event":"tool_end","status":"uncertain"}],"expected":["uncertain_outcomes"]},
+{"id":"slow-observation","guide":{"version":1,"thresholds":{"slowToolMs":10}},"events":[{"event":"tool_end","tool":"read","status":"ok","durationMs":20}],"expected":["slow_tool"]},
+{"id":"absent-counters-unavailable","events":[{"event":"checkpoint"}],"expected":[]},
+{"id":"increment-token-budget","events":[{"event":"checkpoint","inputTokens":100001}],"expected":["token_budget"]},
+{"id":"independent-sessions-not-concurrent","guide":{"version":1,"thresholds":{"maxConcurrentAgents":1}},"events":[{"event":"agent_start","session":"one","agent":"a"},{"event":"agent_start","session":"two","agent":"a"}],"expected":[]},
+{"id":"intent-not-completed-call","events":[{"event":"checkpoint","status":"intent","durationMs":60000}],"expected":[]}
+]}
