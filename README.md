@@ -51,6 +51,8 @@ El contrato v1 acepta exactamente siete campos; v2 optativo añade cinco campos 
 
 Distingue intención, ejecución y resultado, así como denegación y resultado incierto. Un resultado incierto genera una señal para verificar efectos antes de reintentar; Observer nunca autoriza el reintento. V1 no tiene hora de ejecución ni correlación: su fecha representa la primera importación. V2 conserva la cronología y executionId que emite el custodio, con cobertura explícita; no autentica la evidencia. Tampoco identifica sesiones/agentes ni proporciona tokens/costes. [Contrato, límites y verificación](docs/broker-audit-import.md).
 
+Las vistas `review`/`pack` de broker v2 agrupan correcciones de una misma ejecución por su secuencia; la auditoría importada se conserva íntegra. [Reglas y cobertura](docs/broker-review-corrections.md).
+
 ## Qué guarda
 
 Hora, tipo de evento, IDs opacos (históricos SHA256 compatibles), identificador registrado de herramienta, estado, duración y contadores disponibles. Descarta campos desconocidos, prompts, argumentos, respuestas, errores arbitrarios y credenciales. No conserva las conversaciones para revisarlas semánticamente. Las identidades nuevas son aleatorias por instancia, con correspondencias únicamente en memoria; las históricas siguen siendo correlacionables. No es anonimato garantizado.
