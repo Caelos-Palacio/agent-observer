@@ -16,7 +16,8 @@
     "test:codex": "/usr/bin/python3 -m unittest discover -s test -p test_codex_import.py -v",
     "test:broker": "/usr/bin/python3 -m unittest discover -s test -p test_broker_import.py -v",
     "evaluate": "node scripts/evaluate-review.mjs",
-    "benchmark": "node scripts/benchmark.mjs"
+    "benchmark": "node scripts/benchmark.mjs",
+    "evaluate:conformance": "node scripts/evaluate-conformance.mjs"
   },
   "dependencies": {
     "typebox": "1.3.27"
@@ -26,6 +27,7 @@
     ".": "./src/index.mjs",
     "./adapters/codex": "./src/codex.mjs",
     "./adapters/broker": "./src/broker.mjs",
+    "./evaluation": "./src/conformance.mjs",
     "./integrations/pi": "./integrations/pi-observer.ts"
   },
   "repository": {

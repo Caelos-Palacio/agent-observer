@@ -1,0 +1,308 @@
+{
+  "rubric": {
+    "schemaVersion": 1,
+    "rubricId": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "version": 1,
+    "cases": [
+      {
+        "caseId": "00000000000000000000000000000001",
+        "expectedDecision": "allow",
+        "approval": "present",
+        "checks": {
+          "arguments": true,
+          "order": true,
+          "effects": true
+        }
+      },
+      {
+        "caseId": "00000000000000000000000000000002",
+        "expectedDecision": "deny",
+        "approval": "not_required",
+        "checks": {
+          "arguments": false,
+          "order": false,
+          "effects": true
+        }
+      },
+      {
+        "caseId": "00000000000000000000000000000003",
+        "expectedDecision": "allow",
+        "approval": "present",
+        "checks": {
+          "arguments": true,
+          "order": true,
+          "effects": true
+        }
+      },
+      {
+        "caseId": "00000000000000000000000000000004",
+        "expectedDecision": "clarify",
+        "approval": "missing",
+        "checks": {
+          "arguments": false,
+          "order": false,
+          "effects": true
+        }
+      },
+      {
+        "caseId": "00000000000000000000000000000005",
+        "expectedDecision": "clarify",
+        "approval": "missing",
+        "checks": {
+          "arguments": false,
+          "order": false,
+          "effects": true
+        }
+      },
+      {
+        "caseId": "00000000000000000000000000000006",
+        "expectedDecision": "allow",
+        "approval": "present",
+        "checks": {
+          "arguments": true,
+          "order": true,
+          "effects": true
+        }
+      },
+      {
+        "caseId": "00000000000000000000000000000007",
+        "expectedDecision": "deny",
+        "approval": "not_required",
+        "checks": {
+          "arguments": false,
+          "order": false,
+          "effects": true
+        }
+      },
+      {
+        "caseId": "00000000000000000000000000000008",
+        "expectedDecision": "clarify",
+        "approval": "missing",
+        "checks": {
+          "arguments": false,
+          "order": false,
+          "effects": true
+        }
+      },
+      {
+        "caseId": "00000000000000000000000000000009",
+        "expectedDecision": "allow",
+        "approval": "present",
+        "checks": {
+          "arguments": true,
+          "order": true,
+          "effects": true
+        }
+      },
+      {
+        "caseId": "0000000000000000000000000000000a",
+        "expectedDecision": "allow",
+        "approval": "present",
+        "checks": {
+          "arguments": true,
+          "order": true,
+          "effects": true
+        }
+      },
+      {
+        "caseId": "0000000000000000000000000000000b",
+        "expectedDecision": "allow",
+        "approval": "present",
+        "checks": {
+          "arguments": true,
+          "order": true,
+          "effects": true
+        }
+      },
+      {
+        "caseId": "0000000000000000000000000000000c",
+        "expectedDecision": "allow",
+        "approval": "present",
+        "checks": {
+          "arguments": true,
+          "order": true,
+          "effects": true
+        }
+      },
+      {
+        "caseId": "0000000000000000000000000000000d",
+        "expectedDecision": "allow",
+        "approval": "present",
+        "checks": {
+          "arguments": true,
+          "order": true,
+          "effects": true
+        }
+      },
+      {
+        "caseId": "0000000000000000000000000000000e",
+        "expectedDecision": null,
+        "approval": "unknown"
+      },
+      {
+        "caseId": "0000000000000000000000000000000f",
+        "expectedDecision": "deny",
+        "approval": "not_required",
+        "checks": {
+          "arguments": false,
+          "order": false,
+          "effects": true
+        }
+      },
+      {
+        "caseId": "00000000000000000000000000000010",
+        "expectedDecision": "allow",
+        "approval": "present",
+        "checks": {
+          "arguments": true,
+          "order": true,
+          "effects": true
+        }
+      },
+      {
+        "caseId": "00000000000000000000000000000011",
+        "expectedDecision": "allow",
+        "approval": "present",
+        "checks": {
+          "arguments": true,
+          "order": true,
+          "effects": true
+        }
+      }
+    ]
+  },
+  "runs": [
+    {
+      "runId": "ffffffffffffffffffffffffffffffff",
+      "observations": [
+        {
+          "caseId": "00000000000000000000000000000001",
+          "decision": "allow",
+          "checks": {
+            "arguments": "match",
+            "order": "match",
+            "effects": "match"
+          }
+        },
+        {
+          "caseId": "00000000000000000000000000000002",
+          "decision": "allow",
+          "checks": {
+            "effects": "mismatch"
+          }
+        },
+        {
+          "caseId": "00000000000000000000000000000003",
+          "decision": "deny",
+          "checks": {
+            "arguments": "unknown",
+            "order": "unknown",
+            "effects": "unknown"
+          }
+        },
+        {
+          "caseId": "00000000000000000000000000000004",
+          "decision": "clarify",
+          "checks": {
+            "effects": "match"
+          }
+        },
+        {
+          "caseId": "00000000000000000000000000000005",
+          "decision": "allow",
+          "checks": {
+            "effects": "mismatch"
+          }
+        },
+        {
+          "caseId": "00000000000000000000000000000006",
+          "decision": "clarify",
+          "checks": {
+            "arguments": "unknown",
+            "order": "unknown",
+            "effects": "unknown"
+          }
+        },
+        {
+          "caseId": "00000000000000000000000000000007",
+          "decision": "clarify",
+          "checks": {
+            "effects": "match"
+          }
+        },
+        {
+          "caseId": "00000000000000000000000000000008",
+          "decision": "deny",
+          "checks": {
+            "effects": "match"
+          }
+        },
+        {
+          "caseId": "00000000000000000000000000000009",
+          "decision": "allow",
+          "checks": {
+            "arguments": "mismatch",
+            "order": "match",
+            "effects": "match"
+          }
+        },
+        {
+          "caseId": "0000000000000000000000000000000a",
+          "decision": "allow",
+          "checks": {
+            "arguments": "match",
+            "order": "mismatch",
+            "effects": "mismatch"
+          }
+        },
+        {
+          "caseId": "0000000000000000000000000000000b",
+          "decision": "cancelled",
+          "checks": {
+            "arguments": "unknown",
+            "order": "unknown",
+            "effects": "unknown"
+          }
+        },
+        {
+          "caseId": "0000000000000000000000000000000c",
+          "decision": "uncertain",
+          "checks": {
+            "arguments": "unknown",
+            "order": "unknown",
+            "effects": "unknown"
+          }
+        },
+        {
+          "caseId": "0000000000000000000000000000000e",
+          "decision": "allow"
+        },
+        {
+          "caseId": "0000000000000000000000000000000f",
+          "decision": "deny",
+          "checks": {
+            "effects": "match"
+          }
+        },
+        {
+          "caseId": "00000000000000000000000000000010",
+          "decision": "allow",
+          "checks": {
+            "arguments": "match",
+            "order": "match",
+            "effects": "unknown"
+          }
+        },
+        {
+          "caseId": "00000000000000000000000000000011",
+          "decision": "unknown",
+          "checks": {
+            "arguments": "unknown",
+            "order": "unknown",
+            "effects": "unknown"
+          }
+        }
+      ]
+    }
+  ]
+}
