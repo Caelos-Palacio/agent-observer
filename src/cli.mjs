@@ -20,6 +20,7 @@ const HELP=`Agent Observer — compact metadata logs and usage review
   agent-observer import-codex --file JSONL --thread-id ID --database SQLITE
   agent-observer review|pack --source codex|broker --database SQLITE [--guide FILE]
   agent-observer import-broker-audit --file EXPORT_JSONL --database SQLITE
+  agent-observer evaluate-conformance --file METADATA_JSON
 
 Default directory: ~/.local/state/agent-observer/logs
 No prompts, arguments, tool outputs or credentials are retained.
@@ -42,6 +43,10 @@ async function loadGuide(path){
 export async function main(args=process.argv.slice(2)){
   const [command='help',...rest]=args;
   if(['help','--help','-h'].includes(command)){process.stdout.write(HELP);return;}
+  if(command==='evaluate-conformance'){
+    const {evaluateFile}=await import('./conformance_cli.mjs');
+    process.stdout.write(await evaluateFile(rest));return;
+  }
   let directory=process.env.AGENT_OBSERVER_DIR??join(homedir(),'.local','state','agent-observer','logs'),guidePath,event;
   let source='pi',database,file,threadId;
   for(let i=0;i<rest.length;i++){

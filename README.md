@@ -1,5 +1,7 @@
 # Agent Observer
 
+Optional [structured conformance evaluation](docs/conformance-evaluation.md) compares external rubric labels and metadata verdicts using separate safety and utility components. It retains unknown coverage, runs offline and grants no permissions. Existing operational reviews remain unchanged.
+
 Biblioteca y CLI locales, agnósticas del agente y proveedor, para registrar metadatos compactos y revisarlos con una guía configurable. Licencia [MIT](LICENSE).
 
 Versión0.5 mantiene el [contrato neutral y adaptadores optativos](docs/schema.md). Mejoras de0.4: [privacidad, correlación, recuperación y resultados reproducibles](docs/v0.4-improvements.md).
