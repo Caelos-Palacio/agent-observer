@@ -1,6 +1,6 @@
 # Neutral event contract
 
-The core SDK (`src/index.mjs`) exports `createStore`, `normalizeEvent`, `review`, `validateGuide`, and `DEFAULT_GUIDE`. It does not load a provider, credential configuration, other project, Pi extension or transcript automatically. It needs Node22.22+ and standard libraries. TypeBox is used only by the optional Pi integration.
+The core SDK (`src/index.mjs`) exports `createStore`, `normalizeEvent`, `review`, `validateGuide`, and `DEFAULT_GUIDE`. It does not load a provider, credential configuration, other project, Pi extension or transcript automatically. It needs Node 22.22+ and standard libraries. TypeBox is used only by the optional Pi integration.
 
 ```js
 import {createStore,review} from '../src/index.mjs';
@@ -10,7 +10,7 @@ const {events,coverage}=await store.snapshot();
 const report=await review(events,{coverage});
 ```
 
-A trusted host owns `registeredTools` (up to256names). Unknown names become `other`. Omit unavailable fields. Values in `session`, `agent`, `parent`, `taskId` are transformed to opaque per-store IDs; their bounded correspondence table is memory-only. New store instances intentionally do not reconstruct cross-run identity from arbitrary names.
+A trusted host owns `registeredTools` (up to 256 names). Unknown names become `other`. Omit unavailable fields. Values in `session`, `agent`, `parent`, `taskId` are transformed to opaque per-store IDs; their bounded correspondence table is memory-only. New store instances intentionally do not reconstruct cross-run identity from arbitrary names.
 
 ## Fields
 
@@ -27,8 +27,8 @@ Unknown properties are dropped by the generic normalizer. Optional adapters can 
 
 ## Optional adapters
 
-- `./adapters/codex` exposes the explicit experimental offline transcript-to-token projector. It requires Python3 with SQLite on Linux and only reads the explicitly selected file/thread.
+- `./adapters/codex` exposes the explicit experimental offline transcript-to-token projector. It requires `/usr/bin/python3` with SQLite on Linux and only reads the explicitly selected file/thread.
 - `./adapters/broker` exposes explicit host metadata-export import/read APIs, without access to any vault or sibling source repository.
 - `./integrations/pi` exposes an opt-in host extension; it requires Pi and TypeBox. Any existing host can emit the neutral contract without Pi.
 
-The repository includes a cross-project smoke script solely for maintainers. Normal installation, `npm test`, and CI do not require Agent Credential Broker, Enlace, Pi sessions, a provider account, a model or network calls beyond installing the pinned npm dependency. The synthetic benchmark bundles its old reference implementation rather than depending on private Git history.
+The repository includes a cross-project smoke script solely for maintainers. Normal installation, `npm test`, and CI do not require Agent Credential Broker, Pi sessions, a provider account, a model or network calls beyond installing the pinned npm dependency. The synthetic benchmark bundles its old reference implementation rather than depending on private Git history.

@@ -13,7 +13,7 @@ function run(program,args){const child=spawnSync(program,args,{encoding:'utf8',t
 try{
   const audit=join(dir,'custodian'),file=join(dir,'export.jsonl'),database=join(dir,'observer','metadata.sqlite');
   await mkdir(audit,{mode:0o700});
-  const code=`import sys\nsys.path.insert(0,sys.argv[1])\nfrom credential_broker.gui import AuditLog\nfrom credential_broker.audit_export import export_audit\naudit=AuditLog(sys.argv[2])\nfor event,status in [('intent','intent'),('outcome','ok'),('execute','denied')]:\n audit({'event':event,'status':status,'actionIdHash':'a'*16,'durationMs':20,'password':'SYNTHETIC_NEVER_PERSIST','body':{'key':'SYNTHETIC_NEVER_PERSIST'}})\nprint(export_audit(sys.argv[2]),end='')`;
+  const code=`import sys\nsys.path.insert(0,sys.argv[1])\nfrom credential_broker.host import AuditLog\nfrom credential_broker.audit_export import export_audit\naudit=AuditLog(sys.argv[2])\nfor event,status in [('intent','intent'),('outcome','ok'),('execute','denied')]:\n audit({'event':event,'status':status,'actionIdHash':'a'*16,'durationMs':20,'password':'SYNTHETIC_NEVER_PERSIST','body':{'key':'SYNTHETIC_NEVER_PERSIST'}})\nprint(export_audit(sys.argv[2]),end='')`;
   const metadata=run(python,['-I','-c',code,broker,audit]);
   assert.ok(!metadata.includes('SYNTHETIC_NEVER_PERSIST'));
   await writeFile(file,metadata,{mode:0o600});

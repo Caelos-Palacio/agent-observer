@@ -1,0 +1,24 @@
+{
+ "fake": "sk-demo-FAKE-0000",
+ "appendCommand": "node src/cli.mjs append '{\"event\":\"tool_end\",\"tool\":\"bash\",\"status\":\"error\",\"durationMs\":912,\"prompt\":\"rm -rf demo\",\"apiKey\":\"sk-demo-FAKE-0000\"}' --directory LOGS",
+ "appendOut": "{\"accepted\":true,\"event\":{\"timestamp\":\"2026-10-23T17:36:50.576Z\",\"event\":\"tool_end\",\"tool\":\"bash\",\"status\":\"error\",\"durationMs\":912}}",
+ "reviewCommand": "node src/cli.mjs review --directory LOGS",
+ "reviewLines": [
+  "{\"metrics\":{\"toolCalls\":4,\"failedToolCalls\":3,\"slowToolCalls\":1},",
+  " \"findings\":[",
+  "  {\"code\":\"repeated_failures\",\"severity\":\"warning\",\"tool\":\"bash\",\"consecutiveFailures\":3},",
+  "  {\"code\":\"slow_tool\",\"severity\":\"warning\",\"tool\":\"bash\",\"thresholdMs\":30000}",
+  " ],",
+  " \"limitations\":[\"Heuristic metadata review; no prompts, tool arguments or outputs are inspected.\", …]}"
+ ],
+ "exportFirstLine": "{\"schemaVersion\":1,\"source\":\"agent-credential-broker\",\"eventId\":\"7f6fab926a8fc4b02a80c4c4fb5c657318751971bbf236ce5cd8b5d78ae9a752\",\"event\":\"intent\",\"actionIdHash\":\"aaaaaaaaaaaaaaaa\",\"status\":\"intent\",\"durationMs\":20}",
+ "importCommand": "node src/cli.mjs import-broker-audit --file export.jsonl --database broker.sqlite",
+ "importOut": "{\"ok\":true,\"source\":\"broker\",\"readRecords\":3,\"readBytes\":649,\"imported\":3,\"duplicates\":0,\"limited\":false}",
+ "reimportOut": "{\"ok\":true,\"source\":\"broker\",\"readRecords\":3,\"readBytes\":649,\"imported\":0,\"duplicates\":3,\"limited\":false}",
+ "brokerCommand": "node src/cli.mjs review --source broker --database broker.sqlite",
+ "brokerLines": [
+  "{\"metrics\":{\"events\":3,\"toolCalls\":2,\"deniedToolCalls\":1},",
+  " \"coverage\":{\"executionTimestampsAvailable\":false},",
+  " \"limitations\":[\"Broker evidence covers explicit host metadata exports only. Intent events are not completed calls. V1 lacks execution times and request pairing; v2 retains source-supplied timing and correlation as reported by coverage. Session/agent identity, tokens and cost remain unavailable. Imported metadata does not authorize actions or prove audit authenticity.\"]}"
+ ]
+}

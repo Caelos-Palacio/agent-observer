@@ -4,7 +4,7 @@ The observer writes only allowlisted structured metadata. Prompts, arguments, ou
 
 Use `createStore({directory})` with a dedicated private directory. `append(event)` is asynchronous. `snapshot()` returns `{events, coverage}` for the latest bounded window in storage order; review callers must include `coverage` in their output. `events()` is a compatibility async iterable over the same latest window, and does not carry coverage itself. Events use `event`, `timestamp`, `session`, `agent`, `parent`, `taskId`, `tool`, `status`, `durationMs`, `inputTokens`, `outputTokens`, and `cost`. Token and cost counters are **increments**. Recording repeated cumulative totals would double-count usage. Cost units must be consistent and supplied by the producer.
 
-Event kinds are `session_start`, `session_end`, `agent_start`, `agent_end`, `tool_start`, `tool_end`, `error`, and `checkpoint`. Statuses are `ok`, `error`, `cancelled`, `timeout`, and `running`. Durations and failures are aggregated from `tool_end`. The producer must emit paired agent start/end events for concurrency estimates.
+Event kinds are `session_start`, `session_end`, `agent_start`, `agent_end`, `tool_start`, `tool_end`, `error`, and `checkpoint`. Statuses are `ok`, `error`, `cancelled`, `timeout`, `running`, `denied`, `uncertain`, and `intent`. Durations and failures are aggregated from `tool_end`. The producer must emit paired agent start/end events for concurrency estimates.
 
 ```json
 {
@@ -28,4 +28,4 @@ Storage bounds: events up to 2 KiB; active file up to 1 MiB; five archives by de
 
 Directories must be private (0700 on POSIX), log files are 0600, and symlink/hardlink log files are rejected. These checks coordinate trusted local processes and do not defend against an adversary controlling the parent directory or replacing paths between checks. Windows ACLs are managed by the host. Never place the store in a publicly writable location or expose arbitrary store directories through a remote tool.
 
-Version0.4 uses opaque per-instance identities for newly stored events and a host-owned registered-tools allowlist. Historical SHA256 IDs remain readable. Pi metadata v2 adds call/producer IDs, sequences and separate source/observation times; reports expose queue loss and uncertain persistence. `reviewVersion:2` adds rule/guide versions and evidence denominators. See [implementation details and measured limits](v0.4-improvements.md).
+Version 0.4 uses opaque per-instance identities for newly stored events and a host-owned registered-tools allowlist. Historical SHA256 IDs remain readable. Pi metadata v2 adds call/producer IDs, sequences and separate source/observation times; reports expose queue loss and uncertain persistence. `reviewVersion:2` adds rule/guide versions and evidence denominators. See [implementation details and measured limits](v0.4-improvements.md).
