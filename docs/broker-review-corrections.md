@@ -6,7 +6,7 @@ The importer, SQLite data and `readBrokerAudit()` remain unchanged: all original
 
 ## Rules
 
-- V2 identity requires a32hex producer ID,64hex execution/request ID and positive safe-integer sequence. Only `execute`/`outcome` terminal records are grouped. `intent` remains a checkpoint and contributes no completed call.
+- V2 identity requires a 32 hex producer ID, 64 hex execution/request ID and positive safe-integer sequence. Only `execute`/`outcome` terminal records are grouped. `intent` remains a checkpoint and contributes no completed call.
 - A higher sequence wins even when imported records are reordered or executions interleave. Identity includes the producer, so identical request IDs from distinct producers remain distinct.
 - Identical records at the final sequence collapse to one view. Import-observation timestamp may differ and is not an execution-semantic conflict; producer timestamps, status, tool, duration and available counters are compared.
 - Conflicting records at the same greatest sequence produce **one ambiguous execution** with no status, duration or counters. The view does not invent provider status `uncertain`, choose a more favorable result, or count the conflict twice. CLI includes an explicit limitation.

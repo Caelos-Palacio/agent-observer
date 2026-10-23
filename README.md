@@ -1,69 +1,61 @@
 # Agent Observer
 
-Optional [structured conformance evaluation](docs/conformance-evaluation.md) compares external rubric labels and metadata verdicts using separate safety and utility components. It retains unknown coverage, runs offline and grants no permissions. Existing operational reviews remain unchanged.
+**See what your AI coding agents actually did (failed tools, slow calls, token budgets) from compact local metadata that never contains prompts, arguments or secrets.**
 
-Biblioteca y CLI locales, agnósticas del agente y proveedor, para registrar metadatos compactos y revisarlos con una guía configurable. Licencia [MIT](LICENSE).
+English · [Español](README.es.md)
 
-Versión0.5 mantiene el [contrato neutral y adaptadores optativos](docs/schema.md). Mejoras de0.4: [privacidad, correlación, recuperación y resultados reproducibles](docs/v0.4-improvements.md).
+![Animated demo: a log append drops a prompt and an API key, review reports repeated failures and a slow tool, and a credential-broker audit export is imported with zero duplicates on re-import.](docs/media/demo.gif)
 
-## Uso
+<sub>Every terminal line in the demo is real CLI output on synthetic events and a fake key (review output is abridged). Regenerate: `node docs/media/capture.mjs ../agent-credential-broker && python3 docs/media/demo.py` (needs the sibling broker checkout with its venv, Pillow and ffmpeg).</sub>
 
-Requiere Node.js22.22 o posterior. La integración opcional de Pi usa TypeBox; el almacén, CLI y revisor usan bibliotecas estándar. Los importadores de Codex y auditoría del broker necesitan Linux y Python3 con SQLite en `/usr/bin/python3`; no instala servicios ni modelos.
+## Why
+
+Agent sessions are hard to audit after the fact: transcripts are huge and full of private data, and "the agent seemed slow" is not evidence. Observer keeps only an allow-listed record per event (time, event kind, opaque IDs, registered tool name, status, duration, token/cost counters), then applies a configurable, deterministic guide to produce findings with counted evidence. No model is called, nothing leaves your machine, and nothing changes permissions.
+
+It is a local library and CLI, agnostic to the agent and the provider. Version 0.5 (package `0.5.1`) keeps a [neutral event contract with optional adapters](docs/schema.md); the 0.4 changes (privacy, correlation, recovery, reproducible results) are in [v0.4 improvements](docs/v0.4-improvements.md).
+
+## Quick start
+
+Requires Node.js 22.22 or later. The store, the CLI and the reviewer use only the standard library; the optional Pi integration uses TypeBox. The Codex and broker importers also need Linux and Python 3 with SQLite at `/usr/bin/python3`. Nothing installs services or models.
 
 ```sh
+git clone https://github.com/Caelos-Palacio/agent-observer.git
+cd agent-observer
 npm ci --ignore-scripts
-node src/cli.mjs review
-node src/cli.mjs pack
-node src/cli.mjs guide
 npm test
+
+# Record a metadata event (unknown fields such as "prompt" are dropped), then review it.
+node src/cli.mjs append '{"event":"tool_end","tool":"bash","status":"error","durationMs":912}' --directory ~/observer-logs
+node src/cli.mjs review --directory ~/observer-logs
+node src/cli.mjs pack --directory ~/observer-logs     # review + guide, for your existing agent to explain
 ```
 
-`review` devuelve métricas y hallazgos con evidencia contada. `pack` añade una guía de análisis para que tu agente existente explique esos hallazgos; no envía datos a un modelo o servicio. `--guide guia.json` permite ajustar presupuestos tipados. `--directory` elige un almacén privado diferente.
+`review` returns metrics and findings with counted evidence. `pack` adds an analysis guide so that the agent you already use can explain those findings; it sends nothing to a model or service. `--guide guide.json` adjusts the typed budgets (`node src/cli.mjs guide` prints the defaults), and `--directory` picks a private store (default `~/.local/state/agent-observer/logs`, or `AGENT_OBSERVER_DIR`).
 
-Reglas actuales: fallos repetidos por agente/herramienta, concurrencia observada, profundidad conocida, llamadas lentas y presupuestos de tokens/coste cuando hay contadores. Son señales operativas: no demuestran mala calidad, trabajo redundante, fallos semánticos o facturación exacta. La revisión inteligente la realiza el agente que recibe el informe, conservando las limitaciones y evidencia.
+### CLI reference
 
-## Importación explícita de Codex
+| Command | What it does |
+|---|---|
+| `review [--directory DIR] [--guide FILE]` | Metrics, findings and coverage as JSON |
+| `pack [--directory DIR] [--guide FILE]` | The same report plus the guide and instructions for your agent |
+| `append JSON [--directory DIR]` | Validate and store one metadata event (at most 16 KiB of input) |
+| `recover --directory DIR` | Explicit, bounded recovery of a dead writer's lock and an incomplete log tail |
+| `guide` | Print the active guide (default thresholds) |
+| `import-codex --file JSONL --thread-id ID --database SQLITE` | Explicit experimental Codex token import |
+| `import-broker-audit --file EXPORT_JSONL --database SQLITE` | Import an [Agent Credential Broker](https://github.com/Caelos-Palacio/agent-credential-broker) audit export |
+| `review\|pack --source codex\|broker --database SQLITE` | Review an imported source instead of the Pi/SDK store |
+| `evaluate-conformance --file METADATA_JSON` | Optional offline [conformance evaluation](#optional-conformance-evaluation) |
 
-```sh
-node src/cli.mjs import-codex --file /ruta/rollout.jsonl --thread-id ID --database /directorio/privado/codex.sqlite
-node src/cli.mjs review --source codex --database /directorio/privado/codex.sqlite
-node src/cli.mjs pack --source codex --database /directorio/privado/codex.sqlite
-```
+Current rules: repeated failures per agent/tool, observed concurrency, known depth, slow calls, and token/cost budgets when counters exist. These are operational signals. They do not prove poor quality, redundant work, semantic failures or exact billing. The smart part of the review is done by the agent that receives the report, which keeps its limitations and evidence.
 
-Lee solamente el archivo indicado y proyecta contadores incrementales del hilo exacto. SQLite guarda cursor, deduplicación y eventos en una transacción; reimportar, truncar o rotar el archivo no duplica respuestas ya observadas. No copia conversaciones ni cambia el registro de Pi. No captura herramientas, relaciones entre agentes ni costes de Codex: la cobertura los marca como no disponibles. Cada worker/hilo requiere una selección explícita. [Formato, límites y privacidad](docs/codex-import.md).
+## Features
 
-## Auditoría del broker, sin acceso a la bóveda
-
-El custodio exporta exclusivamente metadatos desde su entorno confiable. Observer recibe ese archivo; no recibe permisos para leer la bóveda, acceder al socket ni ejecutar acciones.
-
-```sh
-# En el entorno del custodio; usar un directorio de intercambio autorizado.
-umask 077
-agent-credential-broker audit-export --directory /ruta/privada/custodio > /intercambio/autorizado/audit-export.jsonl
-
-# En el entorno de Observer, seleccionando explícitamente el archivo exportado.
-node src/cli.mjs import-broker-audit --file /intercambio/autorizado/audit-export.jsonl --database /ruta/privada/observer/broker.sqlite
-node src/cli.mjs review --source broker --database /ruta/privada/observer/broker.sqlite
-node src/cli.mjs pack --source broker --database /ruta/privada/observer/broker.sqlite
-```
-
-Para procesos con UIDs diferentes, el humano entrega una copia saneada del exportado que pertenezca al UID de Observer, dentro de un directorio privado; no concede acceso al directorio de la bóveda. La prueba de integración usa el mismo UID y no demuestra aislamiento entre usuarios.
-
-El contrato v1 acepta exactamente siete campos; v2 optativo añade cinco campos de correlación/cronología/secuencia emitidos por el custodio. Una propiedad extra, contraseña, argumento o estado arbitrario invalida el lote completo. Deduplica IDs persistentes en una transacción; reimportar el mismo exportado añade cero eventos. Guarda como máximo10000eventos y100000IDs de deduplicación, tras lo que rechaza nuevas importaciones en vez de olvidar IDs silenciosamente. La base del broker usa una identidad distinta de la base de Codex, con el mismo validador de almacenamiento privado.
-
-Distingue intención, ejecución y resultado, así como denegación y resultado incierto. Un resultado incierto genera una señal para verificar efectos antes de reintentar; Observer nunca autoriza el reintento. V1 no tiene hora de ejecución ni correlación: su fecha representa la primera importación. V2 conserva la cronología y executionId que emite el custodio, con cobertura explícita; no autentica la evidencia. Tampoco identifica sesiones/agentes ni proporciona tokens/costes. [Contrato, límites y verificación](docs/broker-audit-import.md).
-
-Las vistas `review`/`pack` de broker v2 agrupan correcciones de una misma ejecución por su secuencia; la auditoría importada se conserva íntegra. [Reglas y cobertura](docs/broker-review-corrections.md).
-
-## Qué guarda
-
-Hora, tipo de evento, IDs opacos (históricos SHA256 compatibles), identificador registrado de herramienta, estado, duración y contadores disponibles. Descarta campos desconocidos, prompts, argumentos, respuestas, errores arbitrarios y credenciales. No conserva las conversaciones para revisarlas semánticamente. Las identidades nuevas son aleatorias por instancia, con correspondencias únicamente en memoria; las históricas siguen siendo correlacionables. No es anonimato garantizado.
-
-Límites: 2KiB/evento, 1MiB/archivo, cinco archivos anteriores además del actual; lectura máxima10MiB, con ventana de los últimos10000eventos y cobertura/truncamiento explícitos. Rotación y bloqueo entre procesos. Archivos0600 y directorio0700 en POSIX; en Windows los ACL dependen del anfitrión. Un lock nuevo de un PID demostrado muerto admite recuperación explícita acotada; los locks antiguos o inverificables requieren inspección manual. El registro no promete durabilidad transaccional ni sandbox del sistema.
-
-## Pi y otros agentes
-
-[La extensión opcional](docs/pi-integration.md) captura únicamente los procesos Pi donde se carga. Se habilita solo cuando el anfitrión carga la extensión y activa la captura; un lanzador puede integrar explícitamente observaciones de workers desde el padre. No instala shims, configura proveedores ni modifica otras aplicaciones. Ofrece `agent_usage_review` para que Pi consulte métricas y haga una crítica fundamentada. No afirma registrar los procesos internos de Codex, Claude, Grok u otros workers. Otros anfitriones pueden producir el mismo esquema mediante el SDK o `append`.
+- **Metadata only.** Time, event kind, opaque IDs (legacy SHA256 supported), registered tool identifier, status, duration and available counters. Unknown fields, prompts, arguments, responses, arbitrary errors and credentials are dropped. New identities are random per instance with in-memory correspondence only; legacy IDs remain correlatable. This is not guaranteed anonymity.
+- **Bounded storage.** 2 KiB per event, 1 MiB per file, five previous files plus the current one; reads are capped at 10 MiB with a window of the latest 10000 events and explicit coverage/truncation. Cross-process rotation and locking. Files 0600 and directory 0700 on POSIX (Windows ACLs depend on the host). A fresh lock from a provably dead PID allows explicit bounded recovery; old or unverifiable locks need manual inspection. The log promises neither transactional durability nor a system sandbox.
+- **Deterministic review.** Typed JSON thresholds, findings with sample sizes and coverage, no LLM judge.
+- **Explicit importers.** Codex token usage and credential-broker audit exports, each read only from the file you name. See [Codex import](docs/codex-import.md) and [broker audit import](docs/broker-audit-import.md).
+- **Pi extension.** Optional, disabled by default; see below.
+- **SDK for other hosts.** Any host can emit the same schema through the SDK or `append`:
 
 ```js
 import {createStore,review} from './src/index.mjs';
@@ -72,6 +64,63 @@ await store.append({event:'tool_end',session:'local-session',agent:'main',tool:'
 console.log(await review(store.events()));
 ```
 
-No hay modelo, tarea programada, envío externo ni cambio automático de permisos. El módulo de Pi desactiva el registro si falla el disco o se llena la cola; `AGENT_OBSERVER_ENABLED=0` fuerza su desactivación.
+### Credential-broker audit, without vault access
 
-[Guía y límites](docs/review-guide.md). Mantén los logs fuera de repositorios y revisa la cobertura antes de sacar conclusiones.
+The custodian exports metadata only, from its trusted environment. Observer receives that file; it gets no permission to read the vault, reach the socket or execute actions.
+
+```sh
+# In the custodian's environment; use an authorized exchange directory.
+umask 077
+agent-credential-broker audit-export --directory /private/custodian/dir > /authorized/exchange/audit-export.jsonl
+
+# In Observer's environment, selecting the exported file explicitly.
+node src/cli.mjs import-broker-audit --file /authorized/exchange/audit-export.jsonl --database /private/observer/broker.sqlite
+node src/cli.mjs review --source broker --database /private/observer/broker.sqlite
+node src/cli.mjs pack --source broker --database /private/observer/broker.sqlite
+```
+
+With different UIDs, the human hands over a sanitized copy owned by Observer's UID inside a private directory; this grants no access to the vault directory. The integration test uses a single UID and does not demonstrate isolation between users. The v1 contract accepts exactly seven fields; the optional v2 adds five correlation/chronology/sequence fields emitted by the custodian. Any extra property, password, argument or arbitrary state invalidates the whole batch. IDs are deduplicated in one transaction, so re-importing the same export adds zero events. At most 10000 events and 100000 dedup IDs are kept; beyond that new imports are rejected instead of silently forgetting IDs. Intent, execution and outcome are kept distinct, as are denial and an uncertain result. An uncertain result raises a signal to verify effects before retrying; Observer never authorizes a retry. V1 has no execution time or correlation (its date is the first import); v2 keeps the custodian's chronology and `executionId` with explicit coverage but does not authenticate the evidence. Sessions/agents, tokens and cost are unavailable. [Contract, limits and verification](docs/broker-audit-import.md). Broker v2 corrections of one execution are grouped by sequence in `review`/`pack` while the imported audit is kept intact: [rules and coverage](docs/broker-review-corrections.md).
+
+### Codex import (experimental)
+
+```sh
+node src/cli.mjs import-codex --file /path/rollout.jsonl --thread-id ID --database /private/dir/codex.sqlite
+node src/cli.mjs review --source codex --database /private/dir/codex.sqlite
+```
+
+It reads only the file you name and projects incremental token counters for that exact thread. SQLite stores the cursor, deduplication and events in one transaction; re-importing, truncating or rotating the file does not duplicate responses already observed. It copies no conversations and does not touch the Pi log. It does not capture Codex tools, agent relationships or costs; coverage marks them unavailable. Each worker/thread needs an explicit selection. [Format, limits and privacy](docs/codex-import.md).
+
+### Pi and other agents
+
+[The optional extension](docs/pi-integration.md) captures only the Pi processes that load it. It is enabled only when the host loads the extension and turns capture on; a launcher may explicitly integrate observations of workers from the parent. It installs no shims, configures no providers and modifies no other applications. It offers `agent_usage_review` so Pi can query the metrics and give a grounded critique. It does not claim to record the internal processes of Codex, Claude, Grok or other workers.
+
+```sh
+npm ci --ignore-scripts        # in this checkout; the extension needs its TypeBox dependency
+AGENT_OBSERVER_ENABLED=1 AGENT_OBSERVER_DIR=/private/observer-logs \
+  pi --extension /path/to/agent-observer/integrations/pi-observer.ts
+```
+
+There is no model, scheduled task, external upload or automatic permission change. The Pi module disables logging if the disk fails or the queue fills; `AGENT_OBSERVER_ENABLED=0` forces it off. The extension was checked to load with Pi 1.3.0. See also [Pi Session Workspace](https://github.com/Caelos-Palacio/pi-session-workspace) for session navigation in Pi.
+
+## Limitations and security model
+
+- Observer is not a sandbox and not tamper-evident. A process with your UID can read or alter the store; imported metadata and IDs prove nothing about authenticity.
+- Metadata cannot show reasoning quality, task correctness, redundant work or exact bills. Always check coverage before drawing conclusions, and keep logs out of repositories.
+- Event counters must be increments, not cumulative totals.
+- POSIX local-filesystem concurrency is tested; Windows and network filesystems are not.
+- Codex import is experimental because the log format is not a stable API; broker evidence covers only explicit host exports.
+
+See the [review guide](docs/review-guide.md) for the storage limits, coverage fields and interpretation rules.
+
+## Optional conformance evaluation
+
+An offline [structured conformance evaluation](docs/conformance-evaluation.md) compares external rubric labels with metadata verdicts, using separate safety and utility components. It retains unknown coverage, runs offline and grants no permissions. Existing operational reviews remain unchanged. Try it with `npm run evaluate:conformance`.
+
+## Related projects
+
+- [Agent Credential Broker](https://github.com/Caelos-Palacio/agent-credential-broker): lets agents call authenticated APIs without seeing the key; exports the audit metadata this project imports.
+- [Pi Session Workspace](https://github.com/Caelos-Palacio/pi-session-workspace): session navigation, checkpoints and a local mailbox for the Pi coding agent.
+
+## License
+
+[MIT](LICENSE)
