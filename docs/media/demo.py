@@ -112,8 +112,9 @@ T = 12.0
 COLS = 86
 
 
+import textwrap
 def wrap(s, n=COLS):
-    return [s[i:i + n] for i in range(0, len(s), n)] or ['']
+    return textwrap.wrap(s, n, break_long_words=True, break_on_hyphens=False, subsequent_indent='  ') or ['']
 
 def clip(s, n=COLS): return s if len(s) <= n else s[:n - 1] + '…'
 
